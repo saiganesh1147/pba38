@@ -1,6 +1,7 @@
 target/
 dependency-reduced-pom.xml
 *.class
+*.zip
 .idea/
 *.iml
 .vscode/
