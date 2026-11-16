@@ -1,7 +1,7 @@
 @echo off
 title Launch Apache NetBeans
 echo ===================================================
-echo Launching Apache NetBeans IDE...
-echo JDK Home: C:\Program Files\Eclipse Adoptium\jdk-17.0.21.9-hotspot
+echo Launching Apache NetBeans IDE with Java 21 LTS...
+echo JDK Home: D:\jdk-21.0.13+9
 echo ===================================================
-start "" "D:\netbeans\bin\netbeans64.exe"
+start "" "D:\netbeans\bin\netbeans64.exe" --jdkhome "D:\jdk-21.0.13+9"
