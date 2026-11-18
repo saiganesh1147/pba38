@@ -1,234 +1,237 @@
 # Buffer Pool Management System – Cache Inspector
+### Complete User Manual & How-to-Use Guide
 
-A Java Swing desktop application designed to visually simulate, demonstrate, and compare database buffer pool memory management and page replacement policies, specifically **Least Recently Used (LRU)** and the **Clock (Second-Chance)** page replacement algorithms.
-
----
-
-## 1. Project Objective & Overview
-
-Database Management Systems (DBMS) like PostgreSQL, MySQL, and Oracle manage massive data files stored on persistent disk blocks (pages). Because physical disk I/O is orders of magnitude slower than CPU registers and RAM, the database engine maintains an in-memory cache known as the **Buffer Pool**.
-
-The buffer pool is divided into an array of fixed-size slots called **Frames**. As user queries run:
-1. **Page Hit**: If the requested page is already loaded into a buffer frame, it is accessed directly in memory without disk access.
-2. **Page Miss (Warmup)**: If the page is not in memory but free buffer frames are available, the page is read from disk into an empty frame.
-3. **Page Miss & Eviction**: If the page is not in memory and all buffer pool frames are full, a replacement algorithm must select an existing resident page (a "victim") to evict, flush any dirty modifications to disk, and load the new page in its place.
-
-**Buffer Pool Management System – Cache Inspector** provides a high-fidelity visual simulation of this process. It enables database engineering students, instructors, and developers to observe how memory frames fill up, track recency, inspect second-chance reference bits, witness clock hand sweep trajectories, and analyze empirical performance metrics.
+A Java Swing desktop application designed to visually simulate, demonstrate, and compare database buffer pool memory management and page replacement policies (**Least Recently Used (LRU)** vs. **Clock / Second-Chance** algorithms).
 
 ---
 
-## 2. Key Features
+## 🚀 Quick Start: How to Run the Application
 
-### A. Dashboard & Workload Configuration
-- **Customizable Buffer Capacity**: Set the number of physical frames ($1 \le N \le 10$).
-- **Flexible Reference String Input**: Accepts comma, semicolon, or space-separated sequences of page IDs (e.g., `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5`).
-- **One-Click Presets**:
-  - *Sample Benchmark*: 3 frames, `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5`
-  - *High Locality*: 4 frames, `1, 2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 4`
-  - *Sequential Scan*: 3 frames, `1, 2, 3, 4, 5, 6, 7, 8, 9, 10`
-  - *Cyclic Working Set*: 3 frames, `1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4`
-  - *Belady's Anomaly Test*: 3 frames, `1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5`
-- **Random Sequence Generator**: Generates realistic access streams with temporal locality.
-- **Input Validation & Error Handling**: Non-numeric tokens, negative page numbers, out-of-range inputs, and empty sequences are flagged with clear contextual alerts.
+You have three easy ways to launch the application:
 
-### B. LRU (Least Recently Used) Algorithm Tab
-- **Interactive Memory Frame Cards**:
-  - Displays Frame ID (`Frame #0`, `Frame #1`, ...), current resident page (`Page 4`), and last access timestamp (`t=11`).
-  - Highlights the **Most Recently Used (MRU)** page and the **Least Recently Used (LRU - Victim Candidate)** page in real time.
-- **Vibrant Status Color Coding**:
-  - 🟢 **Page Hit**: Vibrant Emerald Green border with soft green glow aura.
-  - 🟡 **Page Miss (Warmup)**: Amber Orange border with warm glow.
-  - 🔴 **Page Miss & Eviction**: Rose Crimson border with eviction indicator banner.
-- **Visual Reference Stream Tape**: Horizontal tape showing processed, current (active marker `▼`), and upcoming pages.
-- **Step-by-Step Replacement History Table (`JTable`)**:
-  - Columns: `Step #`, `Referenced Page`, `Outcome (HIT / MISS / EVICTION)`, `Victim Page`, `Target Frame`, `Buffer Pool State`, `Recency`, `Running Hit %`.
-  - Color-coded cells and click-to-jump row selection.
+### Method 1: One-Click Desktop Shortcut (Fastest)
+1. Double-click the **Buffer Pool Cache Inspector** shortcut on your Windows Desktop.
+2. The application will start immediately.
 
-### C. Clock (Second-Chance) Algorithm Tab
-- **Dual Visualizer**:
-  1. **Circular Clock Dial Visualizer (`ClockRadialView`)**:
-     - Custom high-resolution Java2D vector dial.
-     - Buffer frames arranged as radial nodes along a circular dial.
-     - Rotating **Clock Hand Pointer** (bright rose arrow) pointing to the active candidate frame.
-     - Sweep indicators showing frames evaluated and second chances granted.
-     - Reference bit badges (`[1]` green for second chance granted, `[0]` gray for victim candidate).
-  2. **Linear Memory Frame Cards**: Synchronized with the radial dial for easy inspection.
-- **Detailed Sweep Log Narrative**:
-  - Live narrative explaining the exact pointer sweep:
-    > *"Frame #0 (Page 1) had ref bit 1 -> reset to 0 (second chance granted); Frame #1 (Page 2) had ref bit 0 -> EVICTED! Loaded Page 4 with ref bit=1. Clock hand advanced to Frame #2."*
-- **Step-by-Step Replacement History Table (`JTable`)**: Tracks clock hand positions, swept frames, and hit ratios at every point in time.
+### Method 2: One-Click Batch Script
+1. Open the project folder `D:\pba38`.
+2. Double-click [run_cache_inspector.bat](file:///d:/pba38/run_cache_inspector.bat).
 
-### D. Step-by-Step Simulation & Animation Controls
-- **Controls**: `⏮ Start`, `◀ Prev Step`, `▶ Play / ⏸ Pause`, `Next Step ▶`, `End ⏭`.
-- **Adjustable Speed Slider**: Dynamically adjusts timer tick interval from 150ms to 1500ms.
-- **Interactive Timeline**: Click on any table row to jump instantly to that step.
+### Method 3: Running inside Apache NetBeans
+1. Open **Apache NetBeans** (use the Desktop shortcut or [launch_netbeans.bat](file:///d:/pba38/launch_netbeans.bat)).
+2. In NetBeans, go to **File** $\rightarrow$ **Open Project...** (or press `Ctrl + Shift + O`).
+3. Select `D:\pba38` (marked with a Maven icon) and click **Open Project**.
+4. Press **`F6`** (or right-click the project in the left panel and click **Run**).
 
-### E. Graphical Comparison & Analytics Tab
-- **Side-by-Side Performance Cards**:
-  - LRU Hits vs Clock Hits
-  - LRU Hit Ratio % vs Clock Hit Ratio %
-  - Performance Delta & Advantage summary (e.g. `EQUAL (0.0%)`, `LRU +8.3%`, `CLOCK +5.0%`)
-- **Grouped Bar Charts**: Compares Total Hits, Total Misses, Total Evictions, and Hit % visually.
-- **Cumulative Hit Ratio Progression Curves**: Vector chart plotting the running hit percentage of both algorithms across the entire sequence.
-- **Synchronized Step Table**: Direct side-by-side comparison of LRU vs Clock frame states at each step.
-- **Database Engineering Insights**: Theoretical and architectural comparison explaining why production database engines (like PostgreSQL and the Linux kernel) favor Clock over true LRU to minimize lock contention.
+### Method 4: Command Line (Maven / Java JAR)
+```powershell
+cd D:\pba38
+# Run with Maven:
+mvn compile exec:java
 
-### F. Architecture & Cache Inspector Guide Tab
-- Built-in documentation explaining Buffer Pool architecture, frame tables, hash indexes, pin counts, dirty flags, and real-world database engine design.
+# Or run the packaged standalone JAR:
+java -jar target/buffer-pool-cache-inspector-1.0.0.jar
+```
 
 ---
 
-## 3. Verified Sample Sequence Execution Trace
+## 🖥️ Screen Layout & Dashboard Overview
 
-Given the assignment requirements:
-- **Buffer Pool Capacity**: `3 Frames`
-- **Page Reference String**: `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5`
+When you launch the application, you will see a dark-themed dashboard divided into four main sections:
 
-### Deterministic Results Summary:
-
-| Metric | LRU Algorithm | Clock Algorithm | Match |
-| :--- | :---: | :---: | :---: |
-| **Total Page References** | 12 | 12 | Identical |
-| **Total Page Hits** | **2** (Steps 4 & 9) | **2** (Steps 4 & 9) | Identical |
-| **Total Page Misses** | **10** | **10** | Identical |
-| **Total Evictions (Replacements)** | **7** | **7** | Identical |
-| **Final Hit Percentage** | **16.67%** (2/12) | **16.67%** (2/12) | Identical |
-| **Final Miss Percentage** | **83.33%** (10/12) | **83.33%** (10/12) | Identical |
-| **Final Resident Buffer Pages** | `[5, 4, 3]` | `[5, 3, 4]` | Pages {3, 4, 5} |
-
-### Step-by-Step Trace:
-- **Step 1 (Ref 1)**: Miss. Empty Frame 0 allocated $\rightarrow$ `[1, -, -]`
-- **Step 2 (Ref 2)**: Miss. Empty Frame 1 allocated $\rightarrow$ `[1, 2, -]`
-- **Step 3 (Ref 3)**: Miss. Empty Frame 2 allocated $\rightarrow$ `[1, 2, 3]`
-- **Step 4 (Ref 1)**: **HIT!** Page 1 already resident $\rightarrow$ `[1, 2, 3]`
-- **Step 5 (Ref 4)**: Miss & Replace $\rightarrow$ Evicts Page 2 in LRU, Evicts Page 1 in Clock
-- **Step 6 (Ref 5)**: Miss & Replace
-- **Step 7 (Ref 2)**: Miss & Replace
-- **Step 8 (Ref 1)**: Miss & Replace
-- **Step 9 (Ref 2)**: **HIT!** Page 2 already resident in buffer
-- **Step 10 (Ref 3)**: Miss & Replace
-- **Step 11 (Ref 4)**: Miss & Replace
-- **Step 12 (Ref 5)**: Miss & Replace
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│  BUFFER POOL MANAGEMENT SYSTEM – CACHE INSPECTOR          v1.0.0      │
+│  Database Memory Management & Page Eviction Policy Visualizer          │
+├────────────────────────────────────────────────────────────────────────┤
+│  [ Workload Preset: Dropdown ▼ ]                                      │
+│  Buffer Capacity: [ 3 ]   Page Sequence: [ 1, 2, 3, 1, 4, 5, 2... ]   │
+│                                    [🎲 Randomize] [↺ Reset] [▶ Run]   │
+├────────────────────────────────────────────────────────────────────────┤
+│  [ LRU Algorithm ] [ Clock Algorithm ] [ Comparison ] [ Guide ]        │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │  📊 Stat Cards: Hits | Misses | Evictions | Hit % | Miss %         │ │
+│ │  🎞️ Page Reference Tape: [1] [2] [3] [1] [4]...                   │ │
+│ │  🎮 Playback Bar: [⏮] [◀ Prev] [▶ Play] [Next ▶] [⏭] Speed: ──●── │ │
+│ │  🗄️ Visual Memory Frames / Clock Dial Visualizer                  │ │
+│ │  💬 Live Step Narrative Box (Human-readable explanation)          │ │
+│ │  📋 Step-by-Step History Table (Trace log)                         │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+├────────────────────────────────────────────────────────────────────────┤
+│  Status: Ready • Evaluated 12 page references across 3 frames         │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 4. Technology Stack & Architecture
+## 📖 Step-by-Step Usage Guide
 
-- **Language**: Java 17+ (Eclipse Adoptium OpenJDK 17)
-- **GUI Framework**: Java Swing (`JFrame`, `JPanel`, `JTabbedPane`, `JTable`, `JScrollPane`, `JSpinner`, `JTextField`, `JLabel`, `JSlider`, `Timer`)
-- **Theme & Styling**: FlatLaf Dark theme with custom high-DPI Java2D antialiased rendering
-- **Build System**: Apache Maven 3.x
-- **Testing Framework**: JUnit 5 (Jupiter 5.10.2)
+### 1. Setting Up a Simulation
+1. **Choose a Preset or Enter Custom Data**:
+   - Use the **Workload Preset** dropdown to select a ready-to-test scenario:
+     - **Sample Benchmark**: `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5` (3 frames)
+     - **High Locality**: `1, 2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 4` (4 frames)
+     - **Sequential Scan**: `1, 2, 3, 4, 5, 6, 7, 8, 9, 10` (3 frames)
+     - **Cyclic Working Set**: `1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4` (3 frames)
+     - **Belady's Anomaly**: `1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5` (3 frames)
+   - Or manually type any space, comma, or semicolon-separated sequence into the **Page Reference String** box (e.g. `1, 5, 2, 1, 3, 4`).
+2. **Set Buffer Pool Capacity**:
+   - Adjust the **Buffer Pool Capacity** spinner (from 1 to 10 frames).
+3. **Execute**:
+   - Click the blue **`▶ Run Simulation`** button.
+   - The simulator runs both LRU and Clock simultaneously and updates all tabs.
 
-### Directory Structure:
+---
+
+### 2. Using Step-by-Step Playback Controls
+
+Both the **LRU Algorithm** and **Clock Algorithm** tabs include interactive playback controls:
+
+| Button / Control | Action | Description |
+| :--- | :---: | :--- |
+| **`⏮ Start`** | Jump to Start | Rewinds the buffer pool to step 1 (initial state). |
+| **`◀ Prev Step`** | Step Back | Reverts to the previous reference step. |
+| **`▶ Play / ⏸ Pause`** | Auto-play Toggle | Automatically steps through the sequence with live animations. |
+| **`Next Step ▶`** | Step Forward | Advances to the next page reference. |
+| **`End ⏭`** | Jump to End | Jumps directly to the final completed simulation state. |
+| **Speed Slider** | Speed Control | Slide left for faster playback, slide right for slower step inspection. |
+| **History Table Click** | Direct Seek | Click on any row in the table to jump directly to that exact step. |
+
+---
+
+### 3. Understanding the Visual Indicators & Colors
+
+The simulator uses high-contrast semantic colors across all frames, tables, and tape ribbons:
+
+| Color | Status | What it Means in the Database Buffer Pool |
+| :---: | :---: | :--- |
+| 🟢 **Emerald Green** | **PAGE HIT** | The requested page is **already in RAM**. Accessed instantly with 0 disk I/O. |
+| 🟡 **Amber Orange** | **CACHE MISS (Warmup)** | The page was not in memory, but a **free frame was available**. Loaded without evicting any page. |
+| 🔴 **Rose Crimson** | **MISS & EVICTION** | Buffer pool is **full**. A resident page was **evicted** to disk to make room for the new page. |
+| 🔵 **Sky Blue** | **CLOCK / MRU POINTER** | Highlights the current active pointer, clock hand, or most recently accessed frame. |
+
+---
+
+### 4. Working with the Tabs
+
+#### Tab 1: LRU Algorithm
+- **Buffer Frame Cards**:
+  - Displays each memory frame (`Frame #0`, `Frame #1`, ...), the page currently residing in it (`Page 4`), and access time (`t=11`).
+  - **MRU Badge**: Highlights the Most Recently Used page.
+  - **LRU Victim Badge**: Highlights the Least Recently Used page (the next page scheduled for eviction if a miss occurs).
+- **Sequence Tape Ribbon**: Shows past, current (`▼`), and upcoming pages.
+- **Narrative Box**: Explains the exact database event that occurred (e.g., *"Page 2 resident in Frame #1. Access timestamp updated to t=4"*).
+- **Trace Table**: Full audit log showing buffer states `[F0, F1, F2]` and running hit rates.
+
+#### Tab 2: Clock (Second-Chance) Algorithm
+- **Circular Clock Dial Visualizer (`ClockRadialView`)**:
+  - Memory frames arranged in a circular ring like numbers on a clock face.
+  - **Clock Hand Arrow**: Points to the candidate frame currently under inspection.
+  - **Reference Bit Badges**:
+    - `[1]` (Green): Page was recently accessed; granted a **second chance** if swept.
+    - `[0]` (Gray): Page has not been accessed again; selected as the **victim** when swept.
+- **Sweep Log**: Detailed trace of the clock hand sweeps:
+  > *"Frame #0 had ref bit 1 $\rightarrow$ cleared to 0 (second chance); Frame #1 had ref bit 0 $\rightarrow$ Evicted Page 2, loaded Page 4 (bit=1). Clock hand advanced to Frame #2."*
+
+#### Tab 3: Comparison & Analytics
+- **Side-by-Side Metric Cards**: Compare Total Hits, Misses, Replacements, and Hit Ratios.
+- **Grouped Bar Charts**: Visual comparison of performance metrics for both algorithms.
+- **Progression Curve Chart**: Line chart plotting the cumulative hit percentage over time.
+- **Database Engine Takeaways**: Explains why real-world database engines (like PostgreSQL) use the Clock algorithm instead of true LRU to avoid lock contention on high-concurrency systems.
+
+#### Tab 4: Architecture & Guide
+- Built-in educational documentation on Buffer Pool architecture, frame tables, hash indexes, pin counts, dirty bits, and disk page flushing.
+
+---
+
+## 📊 Benchmark Verification Example
+
+**Input**:
+- **Buffer Capacity**: 3 Frames
+- **Page Sequence**: `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5`
+
+**Expected & Verified Results**:
+
+| Step | Page | LRU Outcome | LRU Buffer | Clock Outcome | Clock Buffer & Hand | Hand / Eviction Note |
+| :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **1** | **1** | MISS | `[1, -, -]` | MISS | `[1*(1), -, -]` | Loaded into Frame 0, Hand $\rightarrow$ 1 |
+| **2** | **2** | MISS | `[1, 2, -]` | MISS | `[1*(1), 2*(1), -]` | Loaded into Frame 1, Hand $\rightarrow$ 2 |
+| **3** | **3** | MISS | `[1, 2, 3]` | MISS | `[1*(1), 2*(1), 3*(1)]` | Loaded into Frame 2, Hand $\rightarrow$ 0 |
+| **4** | **1** | 🟢 **HIT** | `[1, 2, 3]` | 🟢 **HIT** | `[1*(1), 2*(1), 3*(1)]` | Page 1 in F0; Hand stays at 0 |
+| **5** | **4** | 🔴 **EVICT** | `[1, 4, 3]` | 🔴 **EVICT** | `[4*(1), 2(0), 3(0)]` | Clock clears bits 0,1,2 $\rightarrow$ evicts F0 |
+| **6** | **5** | 🔴 **EVICT** | `[1, 4, 5]` | 🔴 **EVICT** | `[4*(1), 5*(1), 3(0)]` | Evicts F1 (bit was 0) $\rightarrow$ Hand $\rightarrow$ 2 |
+| **7** | **2** | 🔴 **EVICT** | `[2, 4, 5]` | 🔴 **EVICT** | `[4*(1), 5*(1), 2*(1)]` | Evicts F2 (bit was 0) $\rightarrow$ Hand $\rightarrow$ 0 |
+| **8** | **1** | 🔴 **EVICT** | `[2, 1, 5]` | 🔴 **EVICT** | `[1*(1), 5(0), 2(0)]` | Clock clears bits $\rightarrow$ evicts F0 |
+| **9** | **2** | 🟢 **HIT** | `[2, 1, 5]` | 🟢 **HIT** | `[1*(1), 5(0), 2*(1)]` | Page 2 in F2; bit set to 1 |
+| **10** | **3** | 🔴 **EVICT** | `[2, 1, 3]` | 🔴 **EVICT** | `[1*(1), 3*(1), 2*(1)]` | Evicts F1 (bit was 0) $\rightarrow$ Hand $\rightarrow$ 2 |
+| **11** | **4** | 🔴 **EVICT** | `[2, 4, 3]` | 🔴 **EVICT** | `[1(0), 3(0), 4*(1)]` | Clock sweeps $\rightarrow$ evicts F2 |
+| **12** | **5** | 🔴 **EVICT** | `[5, 4, 3]` | 🔴 **EVICT** | `[5*(1), 3(0), 4*(1)]` | Evicts F0 (bit was 0) $\rightarrow$ Hand $\rightarrow$ 1 |
+
+**Final Totals**:
+- **Total Hits**: **2** (Step 4 & Step 9)
+- **Total Misses**: **10**
+- **Total Replacements (Evictions)**: **7**
+- **Hit Ratio**: **16.67%**
+- **Miss Ratio**: **83.33%**
+
+---
+
+## 🛠️ Project Structure & File Reference
+
 ```
 d:\pba38\
-├── pom.xml                                   # Maven project descriptor & shaded JAR build config
-├── README.md                                 # Comprehensive documentation & setup manual
+├── launch_netbeans.bat                        # One-click launcher for Apache NetBeans (Java 21 LTS)
+├── run_cache_inspector.bat                    # One-click application runner
+├── pom.xml                                    # Maven build file with shaded JAR configuration
+├── README.md                                  # Complete User Manual and Documentation
 └── src\
     ├── main\java\com\cacheinspector\
-    │   ├── Main.java                         # Application entrypoint (Swing EDT launcher)
+    │   ├── Main.java                          # Swing Event Dispatch Thread application entry point
     │   ├── model\
-    │   │   ├── AlgorithmType.java            # Enum: LRU, CLOCK
-    │   │   ├── PageStatus.java               # Enum: HIT, MISS_EMPTY, MISS_REPLACE
-    │   │   ├── BufferFrame.java              # Buffer frame slot model (pageId, timestamps, refBits)
-    │   │   ├── SimulationStep.java           # Immutable step snapshot & explanation
-    │   │   └── SimulationResult.java         # Aggregated metrics & step history
+    │   │   ├── AlgorithmType.java             # Enum for LRU and CLOCK algorithms
+    │   │   ├── PageStatus.java                # HIT, MISS_EMPTY, MISS_REPLACE outcomes
+    │   │   ├── BufferFrame.java               # Physical buffer frame memory model
+    │   │   ├── SimulationStep.java            # Immutable step snapshot & narrative data
+    │   │   └── SimulationResult.java          # Performance metrics & aggregated results
     │   ├── algorithm\
-    │   │   ├── PageReplacementAlgorithm.java # Common algorithm strategy interface
-    │   │   ├── LruAlgorithm.java             # Least Recently Used implementation
-    │   │   └── ClockAlgorithm.java           # Second-Chance Clock implementation
+    │   │   ├── PageReplacementAlgorithm.java  # Common strategy contract
+    │   │   ├── LruAlgorithm.java              # Deterministic Least Recently Used implementation
+    │   │   └── ClockAlgorithm.java            # Second-Chance Clock implementation
     │   ├── util\
-    │   │   └── InputParser.java              # Input parser, validator, and random sequence generator
+    │   │   └── InputParser.java               # Sequence validator & random generator
     │   └── ui\
-    │       ├── MainFrame.java                # Main dashboard JFrame & tab container
+    │       ├── MainFrame.java                 # Main dashboard window & tab coordinator
     │       ├── theme\
-    │       │   └── UITheme.java              # Color tokens, fonts, FlatLaf configuration
+    │       │   └── UITheme.java               # Dark theme color tokens and FlatLaf styling
     │       ├── components\
-    │       │   ├── ModernButton.java         # Custom rounded button with hover/pressed states
-    │       │   ├── StatCard.java             # Metric card with color indicator bar
-    │       │   ├── BufferFramesView.java     # Interactive buffer memory slots visualizer
-    │       │   ├── ClockRadialView.java      # Circular clock dial with rotating pointer
-    │       │   ├── SequenceTapeView.java     # Horizontal page stream tape
-    │       │   └── ComparisonChartView.java  # Custom Java2D bar charts and progression curves
+    │       │   ├── ModernButton.java          # Flat rounded button with hover states
+    │       │   ├── StatCard.java              # Metrics card with semantic colored bar
+    │       │   ├── BufferFramesView.java      # Visual memory slots (MRU/LRU badges)
+    │       │   ├── ClockRadialView.java       # Circular clock dial with rotating pointer
+    │       │   ├── SequenceTapeView.java      # Horizontal sequence ribbon
+    │       │   └── ComparisonChartView.java   # Custom Java2D bar charts & progression lines
     │       └── tabs\
-    │           ├── DashboardPanel.java       # Top configuration panel with inputs & presets
-    │           ├── AlgorithmTabPanel.java    # Single-algorithm visualization panel
-    │           ├── ComparisonTabPanel.java   # Side-by-side comparative analytics panel
-    │           └── GuideTabPanel.java        # Architecture guide & documentation
+    │           ├── DashboardPanel.java        # Top configuration inputs & preset selector
+    │           ├── AlgorithmTabPanel.java     # Single-algorithm playback & trace table
+    │           ├── ComparisonTabPanel.java    # Side-by-side comparison & insights
+    │           └── GuideTabPanel.java         # Built-in Buffer Pool architecture guide
     └── test\java\com\cacheinspector\
-        ├── AlgorithmTest.java                # Verified unit tests for LRU and Clock
-        ├── InputParserTest.java              # Robust input validation tests
-        └── UiSmokeTest.java                  # Headless & GUI initialization smoke tests
+        ├── AlgorithmTest.java                 # Verified unit tests for LRU and Clock
+        ├── InputParserTest.java               # Validation & delimiter test suite
+        └── UiSmokeTest.java                   # GUI initialization smoke test
 ```
 
 ---
 
-## 5. Compilation and Execution Instructions
+## ❓ Frequently Asked Questions & Troubleshooting
 
-### Option 1: Command Line (CLI via Maven)
+### Q: Which Java version is used?
+- The application compiles and runs on **Java 17+** and **Java 21 LTS** (`D:\jdk-21`).
+- Apache NetBeans is configured to run using OpenJDK 21 LTS via [launch_netbeans.bat](file:///d:/pba38/launch_netbeans.bat).
 
-1. Open PowerShell, Command Prompt, or Terminal in the project root:
-   ```bash
-   cd d:\pba38
-   ```
+### Q: Can I run without NetBeans open?
+- **Yes!** You do not need NetBeans to use the application. Simply double-click the **Buffer Pool Cache Inspector** shortcut on your Desktop or run [run_cache_inspector.bat](file:///d:/pba38/run_cache_inspector.bat).
 
-2. Compile and run all automated tests:
-   ```bash
-   mvn test
-   ```
-
-3. Launch the application directly:
-   ```bash
-   mvn compile exec:java
-   ```
-
-4. Or build and run the standalone, self-contained executable JAR (with all dependencies bundled):
-   ```bash
-   mvn package
-   java -jar target/buffer-pool-cache-inspector-1.0.0.jar
-   ```
-
----
-
-### Option 2: IntelliJ IDEA
-
-1. Open IntelliJ IDEA.
-2. Select **File $\rightarrow$ Open...** and choose the `d:\pba38` directory (select `pom.xml` as a project).
-3. IntelliJ will automatically detect and import the Maven project.
-4. Verify that the Project SDK is set to **Java 17** or higher (**File $\rightarrow$ Project Structure $\rightarrow$ Project $\rightarrow$ SDK**).
-5. Locate `src/main/java/com/cacheinspector/Main.java`.
-6. Right-click `Main.java` and select **Run 'Main.main()'** (or press `Shift + F10`).
-
----
-
-### Option 3: Apache NetBeans
-
-1. Open Apache NetBeans (v17 or higher recommended).
-2. Select **File $\rightarrow$ Open Project...**.
-3. Browse to `d:\pba38` (NetBeans will recognize the Maven icon on the project folder).
-4. Click **Open Project**.
-5. Right-click the project in the Projects panel and select **Clean and Build**.
-6. Right-click the project and select **Run** (or press `F6`). NetBeans will execute `com.cacheinspector.Main`.
-
----
-
-## 6. How to Test and Verify
-
-1. **Launch the application**:
-   - The default configuration (3 frames, `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5`) automatically simulates upon launch.
-2. **Examine the LRU Tab**:
-   - Inspect the stat cards: `Total Hits: 2`, `Total Misses: 10`, `Evictions: 7`, `Hit Ratio: 16.7%`.
-   - Click `▶ Play` to watch the step-by-step playback or click `Next Step ▶` to advance one step at a time.
-   - Note how Frame slots highlight with Emerald Green on Step 4 and Step 9 (Hits).
-3. **Examine the Clock Algorithm Tab**:
-   - Observe the circular dial: the bright rose clock hand points to the active candidate frame.
-   - Watch the reference bit badges toggle between `[1]` (green) and `[0]` (gray) during eviction sweeps.
-   - Read the live step narrative to see how the clock hand grants second chances before choosing a victim.
-4. **Examine the Comparison Tab**:
-   - Inspect the grouped bar charts comparing Hits, Misses, and Evictions.
-   - Observe the cumulative hit progression curve and read the database architectural analysis.
-5. **Try Custom Inputs**:
-   - Change buffer capacity to 4 or 5 frames and click `▶ Run Simulation`.
-   - Select the `High Locality` or `Belady's Anomaly` preset from the dropdown.
-   - Click `🎲 Randomize` to evaluate unpredictable random workloads.
+### Q: How do I test Belady's Anomaly?
+- Select **Belady's Anomaly Test** from the preset dropdown (`1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5`).
+- Test with **3 frames** (notice 9 misses), then test with **4 frames** (notice 10 misses with FIFO, demonstrating that more frames don't always mean fewer misses for non-stack algorithms).
