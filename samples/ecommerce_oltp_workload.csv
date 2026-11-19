@@ -1,0 +1,21 @@
+# E-Commerce Database Buffer Pool Query Trace
+# Columns: timestamp,transaction_id,table_name,page_id,operation
+timestamp,txn_id,table_name,page_id,operation
+1001,TXN_101,products,1,READ
+1002,TXN_102,products,2,READ
+1003,TXN_103,orders,5,WRITE
+1004,TXN_104,products,1,READ
+1005,TXN_105,categories,3,READ
+1006,TXN_106,products,2,READ
+1007,TXN_107,inventory,8,READ
+1008,TXN_108,products,1,READ
+1009,TXN_109,orders,5,READ
+1010,TXN_110,users,4,READ
+1011,TXN_111,products,2,READ
+1012,TXN_112,products,1,READ
+1013,TXN_113,inventory,8,WRITE
+1014,TXN_114,categories,3,READ
+1015,TXN_115,discounts,7,READ
+1016,TXN_116,products,1,READ
+1017,TXN_117,products,2,READ
+1018,TXN_118,orders,5,READ

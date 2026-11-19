@@ -6,6 +6,8 @@ import com.cacheinspector.util.InputParser;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
@@ -20,6 +22,7 @@ public class DashboardPanel extends JPanel {
     private final ModernButton btnRun;
     private final ModernButton btnReset;
     private final ModernButton btnRandom;
+    private final ModernButton btnLoadFile;
     private final JLabel lblValidationMsg;
 
     private record PresetOption(String name, int capacity, String sequence) {
@@ -131,6 +134,10 @@ public class DashboardPanel extends JPanel {
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionPanel.setOpaque(false);
 
+        btnLoadFile = new ModernButton("📂 Load File...", ModernButton.ButtonStyle.SECONDARY);
+        btnLoadFile.setToolTipText("Load a real database trace file (.csv, .txt, .log) or map a real physical file to 4KB pages");
+        btnLoadFile.addActionListener(e -> handleLoadFile());
+
         btnRandom = new ModernButton("🎲 Randomize", ModernButton.ButtonStyle.SECONDARY);
         btnRandom.addActionListener(e -> {
             txtSequence.setText(InputParser.generateRandomSequence(12, 6));
@@ -160,6 +167,7 @@ public class DashboardPanel extends JPanel {
             }
         });
 
+        actionPanel.add(btnLoadFile);
         actionPanel.add(btnRandom);
         actionPanel.add(btnReset);
         actionPanel.add(btnRun);
@@ -175,7 +183,84 @@ public class DashboardPanel extends JPanel {
         add(formPanel, BorderLayout.CENTER);
     }
 
+    private void handleLoadFile() {
+        JFileChooser fileChooser = new JFileChooser(new File("samples"));
+        if (!fileChooser.getCurrentDirectory().exists()) {
+            fileChooser.setCurrentDirectory(new File("."));
+        }
+        fileChooser.setDialogTitle("Select Real-Time Workload Trace or Physical Database File");
+
+        int res = fileChooser.showOpenDialog(this);
+        if (res == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try {
+                String name = selectedFile.getName().toLowerCase();
+                List<Integer> seq;
+
+                if (name.endsWith(".csv") || name.endsWith(".txt") || name.endsWith(".log")) {
+                    // Ask user how they want to interpret the file
+                    Object[] options = {"Load Workload Trace (Page IDs)", "Simulate 4KB File Blocks (Physical I/O)", "Cancel"};
+                    int choice = JOptionPane.showOptionDialog(
+                            this,
+                            "How would you like to process '" + selectedFile.getName() + "'?\n\n" +
+                                    "• Workload Trace: Read real page reference log entries.\n" +
+                                    "• Physical File I/O: Divide the file into 4 KB database pages and simulate queries.",
+                            "Real-Time File Ingestion Mode",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            options[0]);
+
+                    if (choice == 0) {
+                        seq = InputParser.parseTraceFile(selectedFile);
+                    } else if (choice == 1) {
+                        Object[] patterns = {"Index Tree Traversal", "Sequential Table Scan", "Mixed Pareto (80/20)"};
+                        String pat = (String) JOptionPane.showInputDialog(
+                                this,
+                                "Select simulated query workload pattern:",
+                                "Workload Pattern",
+                                JOptionPane.QUESTION_MESSAGE,
+                                null,
+                                patterns,
+                                patterns[0]);
+                        if (pat == null) return;
+                        String patKey = pat.contains("Scan") ? "SCAN" : (pat.contains("Index") ? "INDEX" : "MIXED");
+                        seq = InputParser.generateFileBlockWorkload(selectedFile, InputParser.DEFAULT_PAGE_SIZE_BYTES, patKey);
+                    } else {
+                        return;
+                    }
+                } else {
+                    // Binary or arbitrary physical disk file
+                    long kb = Math.max(1, selectedFile.length() / 1024);
+                    int pages = (int) Math.ceil(selectedFile.length() / 4096.0);
+                    seq = InputParser.generateFileBlockWorkload(selectedFile, InputParser.DEFAULT_PAGE_SIZE_BYTES, "MIXED");
+                    JOptionPane.showMessageDialog(this,
+                            String.format("Mapped physical file '%s' (%d KB) into %d database pages (4 KB blocks).",
+                                    selectedFile.getName(), kb, pages),
+                            "Physical File Mapped",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+
+                if (seq != null && !seq.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < seq.size(); i++) {
+                        sb.append(seq.get(i));
+                        if (i < seq.size() - 1) sb.append(", ");
+                    }
+                    txtSequence.setText(sb.toString());
+                    clearValidation();
+                    lblValidationMsg.setForeground(UITheme.COLOR_HIT);
+                    lblValidationMsg.setText(String.format("✔ Loaded %d page references from '%s'", seq.size(), selectedFile.getName()));
+                }
+            } catch (Exception ex) {
+                showValidation("File Read Error: " + ex.getMessage());
+            }
+        }
+    }
+
     private void showValidation(String message) {
+        lblValidationMsg.setForeground(UITheme.COLOR_REPLACE);
         lblValidationMsg.setText("⚠ " + message);
     }
 

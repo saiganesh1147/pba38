@@ -47,4 +47,30 @@ public class InputParserTest {
             assertTrue(p >= 1 && p <= 5);
         }
     }
+
+    @Test
+    @DisplayName("Test real trace file parsing (.csv, .txt, .log)")
+    public void testTraceFileParsing() throws Exception {
+        java.io.File csvFile = new java.io.File("samples/ecommerce_oltp_workload.csv");
+        assertTrue(csvFile.exists(), "Sample CSV trace file should exist");
+        List<Integer> pages = InputParser.parseTraceFile(csvFile);
+        assertFalse(pages.isEmpty(), "Parsed page list should not be empty");
+        assertEquals(18, pages.size(), "Should have parsed 18 trace rows");
+        assertEquals(1, pages.get(0), "First page should be 1");
+    }
+
+    @Test
+    @DisplayName("Test physical disk file block workload mapping")
+    public void testPhysicalFileBlockMapping() {
+        java.io.File dbFile = new java.io.File("samples/customer_data.db");
+        assertTrue(dbFile.exists(), "Sample DB physical file should exist");
+        List<Integer> scanWorkload = InputParser.generateFileBlockWorkload(dbFile, 4096, "SCAN");
+        assertEquals(16, scanWorkload.size(), "64KB file with 4KB pages should have 16 pages in sequential scan");
+        for (int i = 0; i < 16; i++) {
+            assertEquals(i, scanWorkload.get(i));
+        }
+
+        List<Integer> indexWorkload = InputParser.generateFileBlockWorkload(dbFile, 4096, "INDEX");
+        assertFalse(indexWorkload.isEmpty(), "Index workload should produce page references");
+    }
 }
