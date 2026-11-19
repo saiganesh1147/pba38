@@ -67,14 +67,21 @@ When you launch the application, you will see a dark-themed dashboard divided in
 ## 📖 Step-by-Step Usage Guide
 
 ### 1. Setting Up a Simulation
-1. **Choose a Preset or Enter Custom Data**:
-   - Use the **Workload Preset** dropdown to select a ready-to-test scenario:
-     - **Sample Benchmark**: `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5` (3 frames)
-     - **High Locality**: `1, 2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 4` (4 frames)
-     - **Sequential Scan**: `1, 2, 3, 4, 5, 6, 7, 8, 9, 10` (3 frames)
-     - **Cyclic Working Set**: `1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4` (3 frames)
-     - **Belady's Anomaly**: `1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5` (3 frames)
-   - Or manually type any space, comma, or semicolon-separated sequence into the **Page Reference String** box (e.g. `1, 5, 2, 1, 3, 4`).
+1. **Choose a Preset, Enter Custom Data, or Load Real-Time Files**:
+   - **Method A: Load Real-World Files (New!)**:
+     - Click the **`📂 Load File...`** button.
+     - Choose from two real-world modes:
+       - **Mode 1: Workload Trace File (.csv, .txt, .log)**: Reads real transaction/query logs with `page_id` columns (e.g. `samples/ecommerce_oltp_workload.csv` or `samples/analytics_olap_scan.txt`).
+       - **Mode 2: Physical Disk File Block Paging**: Select any real file on your computer (e.g., `.db`, `.bin`, `.pdf`, `.txt` like `samples/customer_data.db`). The app divides the file into standard 4 KB database page blocks and generates access patterns (Sequential Scan, B+Tree Index Traversal, or 80/20 Pareto).
+   - **Method B: Workload Presets**:
+     - Use the **Workload Preset** dropdown to select a ready-to-test scenario:
+       - **Sample Benchmark**: `1, 2, 3, 1, 4, 5, 2, 1, 2, 3, 4, 5` (3 frames)
+       - **High Locality**: `1, 2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 4` (4 frames)
+       - **Sequential Scan**: `1, 2, 3, 4, 5, 6, 7, 8, 9, 10` (3 frames)
+       - **Cyclic Working Set**: `1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4` (3 frames)
+       - **Belady's Anomaly**: `1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5` (3 frames)
+   - **Method C: Custom String**:
+     - Manually type any space, comma, or semicolon-separated sequence into the **Page Reference String** box (e.g., `1, 5, 2, 1, 3, 4`).
 2. **Set Buffer Pool Capacity**:
    - Adjust the **Buffer Pool Capacity** spinner (from 1 to 10 frames).
 3. **Execute**:
